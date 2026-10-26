@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CMC Assistant · Bảng điều khiển</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF1F5;
+    --surface: #FFFFFF;
+    --ink: #1F2430;
+    --ink-2: #5B6474;
+    --line: #D9DEE6;
+    --accent: #0F6E6E;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E1F0EF;
+    --warn: #B7791F;
+    --warn-soft: #FBF1DE;
+    --danger: #B4372F;
+    --danger-soft: #F8E3E1;
+    --bubble: #F5F7FA;
+    --radius-lg: 14px;
+    --radius-sm: 8px;
+    --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Thanh trên ---------- */
+  .top {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .brand h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  .brand p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .status { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 13px; font-weight: 500;
+    background: var(--bg); color: var(--ink-2);
+  }
+  .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .chip.ok { background: var(--accent-soft); color: var(--accent); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.bad { background: var(--danger-soft); color: var(--danger); }
+  .key { display: none; align-items: center; gap: 8px; }
+  .key.show { display: flex; }
+  .key input {
+    width: 220px; padding: 6px 10px;
+    border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
+  }
+
+  /* Avatar bot: dùng ở thanh trên và trong bản xem trước */
+  .avatar {
+    flex: none; width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink);
+    font-weight: 700; font-size: 14px; letter-spacing: 0.02em;
+  }
+
+  /* ---------- Bố cục 3 cột ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr) 340px;
+    gap: 20px;
+    padding: 20px 24px 32px;
+    max-width: 1440px; margin: 0 auto;
+    align-items: start;
+  }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 14px 16px 10px;
+  }
+  .panel-head h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .ghost {
+    border: 0; background: transparent; cursor: pointer;
+    padding: 4px 8px; border-radius: var(--radius-sm);
+    color: var(--accent); font-size: 13px; font-weight: 600;
+  }
+  .ghost:hover { background: var(--accent-soft); }
+
+  /* ---------- Channel ---------- */
+  .team-name { padding: 8px 16px 4px; font-size: 13px; color: var(--ink-2); }
+  .channels { list-style: none; margin: 0; padding: 0 8px 10px; }
+  .channel {
+    width: 100%; text-align: left; cursor: pointer;
+    display: flex; flex-direction: column; gap: 1px;
+    padding: 8px 10px; border: 0; border-radius: var(--radius-sm); background: transparent;
+  }
+  .channel:hover { background: var(--bg); }
+  .channel[aria-pressed="true"] { background: var(--accent-soft); }
+  .channel[aria-pressed="true"] .channel-name { color: var(--accent); }
+  .channel-name { font-weight: 600; }
+  .channel-id {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .empty { padding: 4px 16px 16px; color: var(--ink-2); font-size: 14px; }
+
+  /* ---------- Soạn tin ---------- */
+  .composer { padding: 0 20px 20px; display: grid; gap: 14px; }
+  .target { font-size: 14px; color: var(--ink-2); margin: 0; }
+  .target strong { color: var(--ink); }
+  .modes { display: inline-flex; padding: 3px; gap: 3px; background: var(--bg); border-radius: 10px; width: fit-content; }
+  .modes button {
+    border: 0; cursor: pointer; padding: 6px 14px; border-radius: 8px;
+    background: transparent; color: var(--ink-2); font-weight: 500; font-size: 14px;
+  }
+  .modes button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(31,36,48,.12); }
+  .field { display: grid; gap: 6px; }
+  .field label { font-size: 14px; font-weight: 500; }
+  .field .hint { font-size: 13px; color: var(--ink-2); }
+  .field input, .field textarea {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
+  }
+  .field textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  .field input.mono { font-family: var(--mono); font-size: 13px; }
+  [hidden] { display: none !important; }
+
+  /* Điểm nhấn: bản xem trước giống bài đăng trong Teams */
+  .preview-wrap { border-radius: var(--radius-lg); background: var(--bg); padding: 18px; }
+  .preview-label { font-size: 13px; color: var(--ink-2); margin: 0 0 10px; }
+  .post { display: flex; gap: 12px; }
+  .post-body {
+    flex: 1; min-width: 0;
+    background: var(--surface); border-radius: 4px var(--radius-lg) var(--radius-lg) var(--radius-lg);
+    padding: 10px 14px 12px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .post-meta { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .post-meta b { font-size: 14px; }
+  .post-meta span { font-size: 12px; color: var(--ink-2); }
+  .post-text { overflow-wrap: anywhere; }
+  .post-text p { margin: 0 0 6px; }
+  .post-text p:last-child { margin-bottom: 0; }
+  .post-text ul { margin: 4px 0 6px; padding-left: 20px; }
+  .post-text code { font-family: var(--mono); font-size: 13px; background: var(--bubble); padding: 1px 5px; border-radius: 4px; }
+  .post-text a { color: var(--accent); }
+  .post-text .placeholder { color: var(--ink-2); }
+  .post.is-reply { margin-left: 48px; }
+  .thread-hint { font-size: 12px; color: var(--ink-2); margin: 0 0 8px 48px; }
+
+  .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .primary {
+    border: 0; cursor: pointer;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--accent); color: var(--accent-ink); font-weight: 600;
+  }
+  .primary:hover { filter: brightness(1.08); }
+  .primary:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .shortcut { font-size: 13px; color: var(--ink-2); }
+  .result { font-size: 14px; padding: 10px 12px; border-radius: var(--radius-sm); }
+  .result.ok { background: var(--accent-soft); color: var(--accent); }
+  .result.bad { background: var(--danger-soft); color: var(--danger); }
+  .result button { margin-left: 6px; }
+
+  /* ---------- Nhật ký ---------- */
+  .feed { list-style: none; margin: 0; padding: 0 16px 16px; max-height: calc(100vh - 170px); overflow: auto; }
+  .event { position: relative; padding: 0 0 14px 20px; }
+  .event::before {
+    content: ""; position: absolute; left: 4px; top: 7px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--k, var(--ink-2));
+  }
+  .event::after {
+    content: ""; position: absolute; left: 7.5px; top: 19px; bottom: 0;
+    width: 1px; background: var(--line);
+  }
+  .event:last-child::after { display: none; }
+  .event-head { display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+  .event-kind { font-weight: 600; color: var(--k, var(--ink)); }
+  .event-time { color: var(--ink-2); font-variant-numeric: tabular-nums; margin-left: auto; }
+  .event-where { font-size: 13px; color: var(--ink-2); }
+  .event-text { font-size: 14px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .event.fresh { animation: arrive .6s ease-out; }
+  @keyframes arrive { from { background: var(--accent-soft); } to { background: transparent; } }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 240px minmax(0, 1fr); }
+    .activity { grid-column: 1 / -1; }
+    .feed { max-height: 420px; }
+  }
+  @media (max-width: 720px) {
+    .top { padding: 12px 16px; }
+    .layout { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
+    .key input { width: 100%; }
+    .key { width: 100%; }
+    .post.is-reply, .thread-hint { margin-left: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .event.fresh { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="avatar" id="brandAvatar" aria-hidden="true">CA</div>
+    <div>
+      <h1 id="botName">CMC Assistant</h1>
+      <p>Bảng điều khiển bot Microsoft Teams</p>
+    </div>
+  </div>
+  <div class="status" id="status" aria-live="polite">
+    <span class="chip">Đang kết nối…</span>
+  </div>
+  <form class="key" id="keyForm">
+    <label for="apiKey" class="shortcut">API key</label>
+    <input id="apiKey" type="password" autocomplete="off" placeholder="Giá trị NOTIFY_API_KEY">
+  </form>
+</header>
+
+<main class="layout">
+  <!-- Cột 1: nơi bot gửi được tin -->
+  <section class="panel" aria-labelledby="chTitle">
+    <div class="panel-head">
+      <h2 id="chTitle">Channel</h2>
+      <button class="ghost" id="reloadChannels" type="button">Tải lại</button>
+    </div>
+    <div id="channelList"></div>
+  </section>
+
+  <!-- Cột 2: soạn & gửi tin -->
+  <section class="panel" aria-labelledby="composeTitle">
+    <div class="panel-head">
+      <h2 id="composeTitle">Gửi tin vào Teams</h2>
+    </div>
+    <form class="composer" id="composer">
+      <p class="target" id="targetLine">Chọn một channel bên trái để gửi tin.</p>
+
+      <div class="modes" role="group" aria-label="Kiểu tin nhắn">
+        <button type="button" data-mode="new" aria-pressed="true">Bài mới</button>
+        <button type="button" data-mode="reply" aria-pressed="false">Trả lời thread</button>
+      </div>
+
+      <div class="field" id="threadField" hidden>
+        <label for="threadId">Thread</label>
+        <input id="threadId" class="mono" placeholder="threadId của bài gốc">
+        <span class="hint">Gửi một bài mới trước, threadId sẽ được điền sẵn ở đây.</span>
+      </div>
+
+      <div class="field">
+        <label for="text">Nội dung</label>
+        <textarea id="text" placeholder="Hỗ trợ **in đậm**, *nghiêng*, `code`, [link](https://…) và danh sách bắt đầu bằng -"></textarea>
+      </div>
+
+      <div class="preview-wrap" aria-live="polite">
+        <p class="preview-label">Xem trước trong Teams</p>
+        <p class="thread-hint" id="threadHint" hidden>Trả lời trong thread</p>
+        <div class="post" id="post">
+          <div class="avatar" aria-hidden="true">CA</div>
+          <div class="post-body">
+            <div class="post-meta"><b id="previewName">CMC Assistant</b><span>Bây giờ</span></div>
+            <div class="post-text" id="previewText"><p class="placeholder">Nội dung bạn gõ sẽ hiện ở đây.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="sendBtn" type="submit" disabled>Gửi</button>
+        <span class="shortcut">hoặc Ctrl + Enter</span>
+      </div>
+      <div id="result" role="status"></div>
+    </form>
+  </section>
+
+  <!-- Cột 3: nhật ký -->
+  <section class="panel activity" aria-labelledby="feedTitle">
+    <div class="panel-head">
+      <h2 id="feedTitle">Hoạt động gần đây</h2>
+    </div>
+    <ol class="feed" id="feed"></ol>
+    <p class="empty" id="feedEmpty">Chưa có hoạt động. Thử @mention bot trong Playground hoặc gửi một tin từ đây.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const state = { channels: [], selected: null, mode: 'new', lastEventId: 0, botName: 'CMC Assistant' };
+
+  // ---- API key: nhớ trong trình duyệt này ----
+  const store = {
+    get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  };
+  $('apiKey').value = store.get('teamsBot.apiKey');
+  $('apiKey').addEventListener('change', () => { store.set('teamsBot.apiKey', $('apiKey').value.trim()); refreshAll(); });
+  $('keyForm').addEventListener('submit', (e) => { e.preventDefault(); $('apiKey').dispatchEvent(new Event('change')); });
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', 'x-api-key': $('apiKey').value.trim(), ...(opts.headers || {}) },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(body.message || `Lỗi ${res.status}`), { status: res.status });
+    return body;
+  }
+
+  // ---- Markdown tối giản cho bản xem trước ----
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function md(src) {
+    const inline = (t) => esc(t)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>')
+      .replace(/(^|\W)_([^_]+)_(?=\W|$)/g, '$1<em>$2</em>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    const out = []; let list = null;
+    for (const line of src.split('\n')) {
+      const m = line.match(/^\s*[-*]\s+(.*)$/);
+      if (m) { (list ||= []).push(`<li>${inline(m[1])}</li>`); continue; }
+      if (list) { out.push(`<ul>${list.join('')}</ul>`); list = null; }
+      if (line.trim()) out.push(`<p>${inline(line)}</p>`);
+    }
+    if (list) out.push(`<ul>${list.join('')}</ul>`);
+    return out.join('');
+  }
+
+  // ---- Trạng thái ----
+  async function loadStatus() {
+    const box = $('status');
+    try {
+      const s = await api('/api/admin/status');
+      state.botName = s.botName;
+      $('botName').textContent = s.botName;
+      $('previewName').textContent = s.botName;
+      const initials = s.botName.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      document.querySelectorAll('.avatar').forEach((a) => (a.textContent = initials));
+      box.innerHTML = '';
+      box.append(
+        chip(s.authMode === 'teams' ? 'Teams thật' : 'Playground (không xác thực)', s.authMode === 'teams' ? 'ok' : 'warn'),
+        chip(s.ai.mode === 'gemini' ? `AI: ${s.ai.model}` : 'AI: echo (chưa có GEMINI_API_KEY)', s.ai.mode === 'gemini' ? 'ok' : 'warn'),
+        chip(`Chạy ${fmtUptime(s.uptimeSec)}`, ''),
+      );
+    } catch (e) {
+      box.innerHTML = '';
+      box.append(chip(e.status === 403 ? 'Sai hoặc thiếu API key' : 'Không kết nối được server', 'bad'));
+      if (e.status === 403) $('keyForm').classList.add('show');
+    }
+  }
+  const chip = (text, tone) => Object.assign(document.createElement('span'), { className: `chip ${tone}`, textContent: text });
+  const fmtUptime = (s) => (s < 60 ? `${s} giây` : s < 3600 ? `${Math.floor(s / 60)} phút` : `${Math.floor(s / 3600)} giờ ${Math.floor((s % 3600) / 60)} phút`);
+
+  // ---- Channel ----
+  async function loadChannels() {
+    const box = $('channelList');
+    try {
+      state.channels = await api('/api/notify/channels');
+    } catch (e) {
+      box.innerHTML = `<p class="empty">${esc(e.status === 403 ? 'Nhập API key ở góc trên để xem channel.' : e.message)}</p>`;
+      return;
+    }
+    if (!state.channels.length) {
+      box.innerHTML = '<p class="empty">Bot chưa biết channel nào. Cài bot vào một team, hoặc mở Agents Playground để bot nhận sự kiện, rồi bấm Tải lại.</p>';
+      selectChannel(null);
+      return;
+    }
+    const groups = new Map();
+    for (const c of state.channels) {
+      const g = c.type === 'channel' ? c.teamName || 'Team' : c.type === 'groupChat' ? 'Group chat' : 'Chat 1-1';
+      (groups.get(g) || groups.set(g, []).get(g)).push(c);
+    }
+    box.innerHTML = '';
+    for (const [team, list] of groups) {
+      box.append(Object.assign(document.createElement('div'), { className: 'team-name', textContent: team }));
+      const ul = Object.assign(document.createElement('ul'), { className: 'channels' });
+      for (const c of list) {
+        const li = document.createElement('li');
+        const b = Object.assign(document.createElement('button'), { type: 'button', className: 'channel' });
+        b.setAttribute('aria-pressed', String(state.selected?.conversationId === c.conversationId));
+        b.innerHTML = `<span class="channel-name">${esc(label(c))}</span><span class="channel-id" title="${esc(c.conversationId)}">${esc(c.conversationId)}</span>`;
+        b.addEventListener('click', () => selectChannel(c));
+        li.append(b); ul.append(li);
+      }
+      box.append(ul);
+    }
+    const still = state.selected && state.channels.find((c) => c.conversationId === state.selected.conversationId);
+    selectChannel(still || (state.selected ? null : state.channels.find((c) => c.type === 'channel') || state.channels[0]));
+  }
+  const label = (c) => (c.type === 'channel' ? `# ${c.name || 'channel chưa rõ tên'}` : c.name || (c.type === 'personal' ? 'Chat 1-1' : 'Group chat'));
+
+  function selectChannel(c) {
+    state.selected = c;
+    document.querySelectorAll('.channel').forEach((b) => {
+      b.setAttribute('aria-pressed', String(!!c && b.querySelector('.channel-id').textContent === c.conversationId));
+    });
+    $('targetLine').innerHTML = c ? `Gửi tới <strong>${esc(label(c))}</strong>${c.teamName ? ` trong ${esc(c.teamName)}` : ''}` : 'Chọn một channel bên trái để gửi tin.';
+    updateSend();
+  }
+
+  // ---- Soạn tin ----
+  document.querySelectorAll('.modes button').forEach((b) =>
+    b.addEventListener('click', () => setMode(b.dataset.mode)),
+  );
+  function setMode(mode) {
+    state.mode = mode;
+    document.querySelectorAll('.modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    $('threadField').hidden = mode !== 'reply';
+    $('threadHint').hidden = mode !== 'reply';
+    $('post').classList.toggle('is-reply', mode === 'reply');
+    updateSend();
+  }
+
+  $('text').addEventListener('input', () => {
+    const v = $('text').value;
+    $('previewText').innerHTML = v.trim() ? md(v) : '<p class="placeholder">Nội dung bạn gõ sẽ hiện ở đây.</p>';
+    updateSend();
+  });
+  $('threadId').addEventListener('input', updateSend);
+  $('text').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) $('composer').requestSubmit(); });
+
+  function updateSend() {
+    const btn = $('sendBtn');
+    const ready = state.selected && $('text').value.trim() && (state.mode === 'new' || $('threadId').value.trim());
+    btn.disabled = !ready;
+    const where = state.selected ? label(state.selected) : '';
+    btn.textContent = state.mode === 'reply' ? `Trả lời thread${where ? ` trong ${where}` : ''}` : `Gửi${where ? ` vào ${where}` : ''}`;
+  }
+
+  $('composer').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if ($('sendBtn').disabled) return;
+    const btn = $('sendBtn'); const out = $('result');
+    btn.disabled = true; out.className = ''; out.textContent = 'Đang gửi…';
+    try {
+      const r = await api('/api/notify', {
+        method: 'POST',
+        body: JSON.stringify({
+          channel: state.selected.conversationId,
+          text: $('text').value,
+          threadId: state.mode === 'reply' ? $('threadId').value.trim() : undefined,
+        }),
+      });
+      out.className = 'result ok';
+      out.innerHTML = state.mode === 'reply'
+        ? 'Đã trả lời trong thread.'
+        : `Đã gửi. threadId: <code>${esc(r.threadId || '')}</code><button type="button" class="ghost" id="replyNext">Trả lời bài này</button>`;
+      $('replyNext')?.addEventListener('click', () => { $('threadId').value = r.threadId; setMode('reply'); $('text').focus(); });
+      if (state.mode === 'new' && r.threadId) $('threadId').value = r.threadId;
+      $('text').value = ''; $('text').dispatchEvent(new Event('input'));
+      pollEvents();
+    } catch (err) {
+      out.className = 'result bad';
+      out.textContent = err.status === 404 ? 'Bot không còn biết channel này. Bấm Tải lại danh sách channel.' : `Gửi thất bại: ${err.message}`;
+    } finally {
+      updateSend();
+    }
+  });
+
+  // ---- Nhật ký ----
+  const KINDS = {
+    mention: ['Được gọi', 'var(--ink)'],
+    reply: ['Bot trả lời', 'var(--accent)'],
+    tool: ['Dùng tool', 'var(--warn)'],
+    notify: ['Gửi qua API', 'var(--accent)'],
+    install: ['Cài vào team', 'var(--ink-2)'],
+    error: ['Lỗi', 'var(--danger)'],
+  };
+  async function pollEvents() {
+    let list;
+    try { list = await api(`/api/admin/events?after=${state.lastEventId}`); } catch { return; }
+    if (!list.length) return;
+    const feed = $('feed');
+    for (const ev of list) {
+      state.lastEventId = Math.max(state.lastEventId, ev.id);
+      const [name, color] = KINDS[ev.kind] || [ev.kind, 'var(--ink-2)'];
+      const li = Object.assign(document.createElement('li'), { className: 'event fresh' });
+      li.style.setProperty('--k', color);
+      const time = new Date(ev.at).toLocaleTimeString('vi-VN', { hour12: false });
+      li.innerHTML =
+        `<div class="event-head"><span class="event-kind">${esc(name)}</span>` +
+        `${ev.who ? `<span>${esc(ev.who)}</span>` : ''}<span class="event-time">${time}</span></div>` +
+        `${ev.where ? `<div class="event-where">${esc(ev.where)}</div>` : ''}` +
+        `<div class="event-text">${esc(ev.text)}</div>`;
+      feed.prepend(li);
+      if (ev.kind === 'install') loadChannels();
+    }
+    while (feed.children.length > 100) feed.lastElementChild.remove();
+    $('feedEmpty').hidden = feed.children.length > 0;
+  }
+
+  // ---- Khởi động ----
+  async function refreshAll() { await Promise.all([loadStatus(), loadChannels()]); state.lastEventId = 0; $('feed').innerHTML = ''; pollEvents(); }
+  $('reloadChannels').addEventListener('click', loadChannels);
+  fetch('/api/admin/auth').then((r) => r.json()).then((a) => { if (a.apiKeyRequired) $('keyForm').classList.add('show'); }).catch(() => {});
+  setMode('new');
+  refreshAll();
+  setInterval(pollEvents, 2500);
+  setInterval(loadStatus, 30000);
+})();
+</script>
+</body>
+</html>
