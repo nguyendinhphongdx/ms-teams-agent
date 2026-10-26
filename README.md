@@ -1,4 +1,4 @@
-# teams-ai-bot
+# ms-teams-agent
 
 Bot Microsoft Teams chạy trên NestJS: người dùng `@mention` bot trong channel, một AI agent
 (Gemini, gọi tool) xử lý yêu cầu và trả lời vào đúng thread. Kèm API để hệ thống khác
@@ -49,7 +49,7 @@ Bot Framework Service (cloud Microsoft)
   │  tra endpoint đã đăng ký cho App ID của bot
   │  POST https://<domain>/api/messages, kèm JWT do Microsoft ký
   ▼
-Traefik (TLS) → container teams-ai-bot (NestJS, NODE_ENV=production)
+Traefik (TLS) → container ms-teams-agent (NestJS, NODE_ENV=production)
   │  verify JWT bằng MicrosoftAppId/Password/TenantId — 401 nếu không hợp lệ
   │  BotActivityHandler → AgentService → Gemini API
   ▼
