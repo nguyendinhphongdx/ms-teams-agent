@@ -1,0 +1,65 @@
+# Cấu hình dữ liệu giả cho Microsoft 365 Agents Playground (chỉ dùng khi test local).
+# Playground tự đọc file này khi bạn chạy `npm run playground` trong thư mục project.
+# Tên bot ở Teams thật KHÔNG lấy từ đây mà từ "Short name" của app trong Teams Developer Portal.
+version: "0.1.2"
+tenantId: 00000000-0000-0000-0000-000000000001
+bot:
+  id: 00000000-0000-0000-0000-000000000011
+  name: CMC Assistant          # <- tên hiện khi @mention trong Playground (tối đa 42 ký tự)
+currentUser:
+  id: user-id-0
+  name: Phong
+  userPrincipleName: phong@example.com
+  aadObjectId: 00000000-0000-0000-0000-000000000020
+  givenName: Phong
+  surname: Nguyen
+  email: phong@example.com
+# Playground yêu cầu đúng 5 user khác (ngoài currentUser)
+users:
+  - id: user-id-1
+    name: An
+    userPrincipleName: an@example.com
+    aadObjectId: 00000000-0000-0000-0000-000000000021
+    givenName: An
+    surname: Tran
+    email: an@example.com
+  - id: user-id-2
+    name: Binh
+    userPrincipleName: binh@example.com
+    aadObjectId: 00000000-0000-0000-0000-000000000022
+    givenName: Binh
+    surname: Le
+    email: binh@example.com
+  - id: user-id-3
+    name: Chi
+    userPrincipleName: chi@example.com
+    aadObjectId: 00000000-0000-0000-0000-000000000023
+    givenName: Chi
+    surname: Pham
+    email: chi@example.com
+  - id: user-id-4
+    name: Dung
+    userPrincipleName: dung@example.com
+    aadObjectId: 00000000-0000-0000-0000-000000000024
+    givenName: Dung
+    surname: Hoang
+    email: dung@example.com
+  - id: user-id-5
+    name: Giang
+    userPrincipleName: giang@example.com
+    aadObjectId: 00000000-0000-0000-0000-000000000025
+    givenName: Giang
+    surname: Vu
+    email: giang@example.com
+personalChat:
+  id: personal-chat-id
+groupChat:
+  id: group-chat-id
+  name: Nhóm Dev
+team:
+  id: team-id
+  name: CMC AI Team
+  aadGroupId: 00000000-0000-0000-0000-000000000031
+  channels:
+    - id: channel-ai-bot-id
+      name: ai-bot
