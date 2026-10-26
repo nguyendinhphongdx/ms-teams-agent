@@ -1,0 +1,30 @@
+{
+  "name": "teams-ai-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NestJS bot: @mention trong MS Teams -> AI agent -> tool trả lời vào đúng channel/thread",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "start:dev": "ts-node-dev --respawn --transpile-only -r dotenv/config src/main.ts",
+    "playground": "agentsplayground -e http://localhost:3978/api/messages -c msteams",
+    "test:e2e": "ts-node --transpile-only scripts/smoke-test.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/core": "^12.2.0",
+    "@nestjs/platform-express": "^12.2.0",
+    "botbuilder": "^4.23.3",
+    "dotenv": "^16.4.5",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.0"
+  }
+}
